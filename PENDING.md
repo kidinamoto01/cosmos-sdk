@@ -20,6 +20,7 @@ FEATURES
 * Gaia CLI  (`gaiacli`)
 
 * Gaia
+  * \#3428 Run the simulation from a particular genesis state loaded from a file
 
 * SDK
 
