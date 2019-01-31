@@ -7,10 +7,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mock/simulation"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/staking/keeper"
 )
+
+// TODO:  This is a hacky solution to the fact that governance deposits are stored in accounts.
+// This should be fixed in https://github.com/cosmos/cosmos-sdk/pull/2939
+var blacklistedSendFromAddrs = []sdk.AccAddress{gov.DepositedCoinsAccAddr, gov.BurnedDepositCoinsAccAddr}
 
 // SimulateMsgCreateValidator
 func SimulateMsgCreateValidator(m auth.AccountKeeper, k staking.Keeper) simulation.Operation {
@@ -31,7 +36,21 @@ func SimulateMsgCreateValidator(m auth.AccountKeeper, k staking.Keeper) simulati
 			simulation.RandomDecAmount(r, maxCommission),
 		)
 
-		acc := simulation.RandomAcc(r, accs)
+		var acc simulation.Account
+
+		for {
+			blacklisted := false
+			acc = simulation.RandomAcc(r, accs)
+			for _, blacklistedAddr := range blacklistedSendFromAddrs {
+				if acc.Address.Equals(blacklistedAddr) {
+					blacklisted = true
+				}
+			}
+			if !blacklisted {
+				break
+			}
+		}
+
 		address := sdk.ValAddress(acc.Address)
 		amount := m.GetAccount(ctx, acc.Address).GetCoins().AmountOf(denom)
 		if amount.GT(sdk.ZeroInt()) {
@@ -113,7 +132,22 @@ func SimulateMsgDelegate(m auth.AccountKeeper, k staking.Keeper) simulation.Oper
 		denom := k.GetParams(ctx).BondDenom
 		val := keeper.RandomValidator(r, k, ctx)
 		validatorAddress := val.GetOperator()
-		delegatorAcc := simulation.RandomAcc(r, accs)
+
+		var delegatorAcc simulation.Account
+
+		for {
+			blacklisted := false
+			delegatorAcc = simulation.RandomAcc(r, accs)
+			for _, blacklistedAddr := range blacklistedSendFromAddrs {
+				if delegatorAcc.Address.Equals(blacklistedAddr) {
+					blacklisted = true
+				}
+			}
+			if !blacklisted {
+				break
+			}
+		}
+
 		delegatorAddress := delegatorAcc.Address
 		amount := m.GetAccount(ctx, delegatorAddress).GetCoins().AmountOf(denom)
 		if amount.GT(sdk.ZeroInt()) {
