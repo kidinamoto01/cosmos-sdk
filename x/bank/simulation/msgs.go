@@ -12,9 +12,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mock"
 	"github.com/cosmos/cosmos-sdk/x/mock/simulation"
 )
+
+// TODO:  This is a hacky solution to the fact that governance deposits are stored in accounts.
+// This should be fixed in https://github.com/cosmos/cosmos-sdk/pull/2939
+var blacklistedSendFromAddrs = []sdk.AccAddress{gov.DepositedCoinsAccAddr, gov.BurnedDepositCoinsAccAddr}
 
 // SingleInputSendTx tests and runs a single msg send w/ auth, with one input and one output, where both
 // accounts already exist.
@@ -54,7 +59,18 @@ func SingleInputSendMsg(mapper auth.AccountKeeper, bk bank.Keeper) simulation.Op
 }
 
 func createSingleInputSendMsg(r *rand.Rand, ctx sdk.Context, accs []simulation.Account, mapper auth.AccountKeeper) (fromAcc simulation.Account, action string, msg bank.MsgSend, abort bool) {
-	fromAcc = simulation.RandomAcc(r, accs)
+	for {
+		blacklisted := false
+		fromAcc = simulation.RandomAcc(r, accs)
+		for _, blacklistedAddr := range blacklistedSendFromAddrs {
+			if fromAcc.Address.Equals(blacklistedAddr) {
+				blacklisted = true
+			}
+		}
+		if !blacklisted {
+			break
+		}
+	}
 	toAcc := simulation.RandomAcc(r, accs)
 	// Disallow sending money to yourself
 	for {
