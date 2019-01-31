@@ -8,6 +8,7 @@ BREAKING CHANGES
 
 * Gaia CLI  (`gaiacli`)
   - [#3399](https://github.com/cosmos/cosmos-sdk/pull/3399) Add `gaiad validate-genesis` command to facilitate checking of genesis files
+  - [\#1894](https://github.com/cosmos/cosmos-sdk/issues/1894) `version` prints out short info by default. Add `--long` flag. Proper handling of `--format` flag introduced.
 
 * Gaia
 
@@ -21,9 +22,13 @@ FEATURES
 * Gaia REST API
 
 * Gaia CLI  (`gaiacli`)
+  * [\#3429](https://github.com/cosmos/cosmos-sdk/issues/3429) Support querying
+  for all delegator distribution rewards.
+  * \#3449 Proof verification now works with absence proofs
 
 * Gaia
   - [\#3397](https://github.com/cosmos/cosmos-sdk/pull/3397) Implement genesis file sanitization to avoid failures at chain init.
+  * \#3428 Run the simulation from a particular genesis state loaded from a file
 
 * SDK
   * \#3270 [x/staking] limit number of ongoing unbonding delegations /redelegations per pair/trio
@@ -45,8 +50,10 @@ IMPROVEMENTS
 * Gaia
   * [\#3418](https://github.com/cosmos/cosmos-sdk/issues/3418) Add vesting account
   genesis validation checks to `GaiaValidateGenesisState`.
+  * [\#3420](https://github.com/cosmos/cosmos-sdk/issues/3420) Added maximum length to governance proposal descriptions and titles
 
 * SDK
+  * \#3435 Test that store implementations do not allow nil values
 
 * Tendermint
 
@@ -57,7 +64,12 @@ BUG FIXES
 
 * Gaia CLI  (`gaiacli`)
   - [\#3417](https://github.com/cosmos/cosmos-sdk/pull/3417) Fix `q slashing signing-info` panic by ensuring safety of user input and properly returning not found error
+  - [\#3345](https://github.com/cosmos/cosmos-sdk/issues/3345) Upgrade ledger-cosmos-go dependency to v0.9.3 to pull
+    https://github.com/ZondaX/ledger-cosmos-go/commit/ed9aa39ce8df31bad1448c72d3d226bf2cb1a8d1 in order to fix a derivation path issue that causes `gaiacli keys add --recover`
+    to malfunction.
   - [\#3419](https://github.com/cosmos/cosmos-sdk/pull/3419) Fix `q distr slashes` panic 
+  - [\#3453](https://github.com/cosmos/cosmos-sdk/pull/3453) The `rest-server` command didn't respect persistent flags such as `--chain-id` and `--trust-node` if they were
+    passed on the command line.
 
 * Gaia
 
